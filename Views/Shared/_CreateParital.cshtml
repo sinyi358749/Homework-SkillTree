@@ -1,0 +1,45 @@
+﻿@model Homework_SkillTree.Models.BookKeeping
+
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label for="category" class="col-sm-2 col-form-label">類別</label>
+                <select id="category" asp-validation-for="Category" asp-for="Category" class="form-select">
+                    <option value="" selected>請選擇</option>
+                    <option>支出</option>
+                    <option>收入</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="date" class="col-sm-2 col-form-label">日期</label>
+                <input asp-for="TransDate" class="form-control" />
+                <span asp-validation-for="TransDate" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="money" class="col-sm-2 col-form-label">金額</label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label for="description" class="col-sm-2 col-form-label">備註</label>
+
+                <textarea asp-for="Description" class="form-control" id="description" rows="3"></textarea>
+
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
