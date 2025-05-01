@@ -1,12 +1,19 @@
+using Homework_SkillTree.Data;
 using Homework_SkillTree.Models;
+using Homework_SkillTree.Service;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<masterDbContext>(options => options.UseSqlServer(connectionString));
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+builder.Services.AddScoped<DapperDbContext>();
+
+// µù¥U Service
+builder.Services.AddScoped<IBookKeepingService, BookKeepingService>();
+
+builder.Services.AddScoped<AccountBookRepository>();
 
 var app = builder.Build();
 

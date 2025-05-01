@@ -1,56 +1,65 @@
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using Homework_SkillTree.Models;
 using Microsoft.AspNetCore.Mvc;
+using Homework_SkillTree.Service;
 
 namespace Homework_SkillTree.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly masterDbContext _context;
-        public HomeController(masterDbContext context, ILogger<HomeController> logger)
+        private readonly IBookKeepingService  _bookKeepingService;
+        private readonly int PageSize = 10; // 每頁顯示數量
+
+
+        public HomeController(ILogger<HomeController> logger,IBookKeepingService bookKeeping)
         {
-            _context = context;
+            _bookKeepingService = bookKeeping;
             _logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(int page=1)
         {
-
             // 取得所有的 BookKeeping 資料
-            var bookKeepings = _context.BookKeepings.ToList();
-            ViewBag.BookKeepings = bookKeepings;
+            var bookKeepings = _bookKeepingService.GetAllBookKeepingAsync().Result;
 
-            return View();
+            // 偷吃步分頁邏輯
+            var count = bookKeepings.Count();
+            var totalPage = (int)Math.Ceiling((double)count / PageSize);
+
+            var startIndex = (page - 1) * PageSize;
+            var endIndex = Math.Min(startIndex + PageSize, count);
+            var paginatedBookKeepings = bookKeepings.Skip(startIndex).Take(PageSize).ToList();
+
+            // 設定分頁資訊
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPage;
+
+            return View(paginatedBookKeepings);
         }
 
-        public IActionResult List()
-        {
-            var bookKeepings = _context.BookKeepings.ToList();
-            ViewBag.BookKeepings = bookKeepings;
 
-
-            return View(bookKeepings);
-        }
-
-        public IActionResult Create(BookKeeping bk)
+        [HttpPost]
+        public IActionResult Create(BookKeepingViewModel bk)
         {
 
             if (ModelState.IsValid)
             {
-                _context.BookKeepings.Add(bk);
-                _context.SaveChanges();
-
-                ViewData["Message"] = "存檔成功";
+                var result = _bookKeepingService.AddBookKeepingAsync(bk);
+                if(result.Result)
+                {
+                    ViewData["Message"] = "存檔成功";
+                }
+                else
+                {
+                    ViewData["Message"] = "存檔失敗";
+                }
             }
 
             return RedirectToAction("Index");
         }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()

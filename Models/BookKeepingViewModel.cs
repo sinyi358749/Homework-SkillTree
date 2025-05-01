@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Homework_SkillTree.Models
 {
-    public partial class BookKeeping
+    public partial class BookKeepingViewModel
     {
 
         public int? Id { get; set; }
@@ -28,5 +28,9 @@ namespace Homework_SkillTree.Models
         [Display(Name = "備註")]
         [StringLength(100, ErrorMessage = "備註內容不能超過 100 個字元")]
         public string? Description { get; set; }
+
+        //guid流水號
+        public Guid keyId { get; set; }
+
     }
 }
