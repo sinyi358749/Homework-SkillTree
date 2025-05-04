@@ -32,7 +32,10 @@ namespace Homework_SkillTree.Service
                 bk.Add(bookKeeping);
             });
 
-            return Task.FromResult(bk.ToList());
+            //依TransDate 排序
+            bk = bk.OrderByDescending(x => x.TransDate).ToList();
+
+            return Task.FromResult(bk);
         }
 
         //取單筆

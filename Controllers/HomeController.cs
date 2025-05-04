@@ -58,6 +58,7 @@ namespace Homework_SkillTree.Controllers
             }
 
             return RedirectToAction("Index");
+
         }
 
 
@@ -65,6 +66,20 @@ namespace Homework_SkillTree.Controllers
         public IActionResult Error()
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        }
+
+        public IActionResult Delete(Guid id)
+        {
+            var result = _bookKeepingService.DeleteBookKeepingAsync(id);
+            if (result.Result)
+            {
+                ViewData["Message"] = "刪除成功";
+            }
+            else
+            {
+                ViewData["Message"] = "刪除失敗";
+            }
+            return RedirectToAction("Index");
         }
     }
 }

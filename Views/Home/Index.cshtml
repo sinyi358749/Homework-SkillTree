@@ -16,7 +16,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label for="category" class="col-sm-2 col-form-label">類別</label>
-                <select id="category" asp-validation-for="Category" name="Category" class="form-select">
+                <select id="category" asp-validation-for="Category" name="Category" class="form-select" required>
                     <option value="" selected>請選擇</option>
                     <option>支出</option>
                     <option>收入</option>
@@ -24,18 +24,18 @@
             </div>
             <div class="form-group">
                 <label for="date" class="col-sm-2 col-form-label">日期</label>
-                <input name="TransDate" class="form-control" />
+                <input type="datetime-local" name="TransDate" class="form-control" required />
                 <span asp-validation-for="@bookKeeping.TransDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label for="money" class="col-sm-2 col-form-label">金額</label>
-                <input name="Amount" class="form-control" />
+                <input name="Amount" class="form-control" required />
                 <span asp-validation-for="@bookKeeping.Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label for="description" class="col-sm-2 col-form-label">備註</label>
 
-                <textarea name="Description" class="form-control" id="description" rows="3"></textarea>
+                <textarea name="Description" class="form-control" id="description" rows="3" required></textarea>
 
                 <span asp-validation-for="@bookKeeping.Description" class="text-danger"></span>
             </div>
@@ -79,7 +79,7 @@
                     @Html.DisplayNameFor(model => model.Amount)
                 </th>
                 <th style="width: 35%; word-wrap: break-word; white-space: normal;">  
-                   @Html.DisplayNameFor(model => model.Description)  
+                      @Html.DisplayNameFor(model => model.Description)  
                 </th>
                 <th style="width: 20%">
                     <span>功能</span>
@@ -105,15 +105,17 @@
                         @Html.DisplayFor(modelItem => item.Amount)
                     </td>
                     <td style="word-wrap: break-word; white-space: normal;">
-                        @Html.DisplayFor(modelItem => item.Description)
+                        @{
+                            var description = item.Description?.Length > 50
+                            ? item.Description.Substring(0, 50) + "..."
+                            : item.Description;
+                        }
+                        @Html.DisplayFor(modelItem => description)
                     </td>
                     <td class="text-center">
                         <div class="btn-group" role="group">
-                            <a class="btn btn-sm btn-outline-primary" asp-action="Edit" asp-route-id="@item.keyId">
-                                <i class="bi bi-pencil"></i> 編輯
-                            </a>
-                            <a class="btn btn-sm btn-outline-info" asp-action="Details" asp-route-id="@item.keyId">
-                                <i class="bi bi-info-circle"></i> 詳細
+                            <a class="btn btn-sm btn-outline-primary" asp-route-id="@item.keyId" onclick="alert('尚未開發完成')">
+                                <i class="bi bi-pencil"></i> 明細
                             </a>
                             <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.keyId">
                                 <i class="bi bi-trash"></i> 刪除

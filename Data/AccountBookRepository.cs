@@ -33,7 +33,7 @@ namespace Homework_SkillTree.Data
 
         public async Task<int> AddAccountBooksAsync(AccountBookModel account)
         {
-            var query = "Insert itno AccountBook  ([Id],[Categoryyy],[Amounttt],[Dateee],[Remarkkk]) Values (@Id,@Categoryyy,@Amounttt,@Dateee,@Remarkkk)";
+            var query = "Insert into AccountBook  ([Id],[Categoryyy],[Amounttt],[Dateee],[Remarkkk]) Values (@Id,@Categoryyy,@Amounttt,@Dateee,@Remarkkk)";
             using (var connection = _dbContext.Connection)
             {
                 return await connection.ExecuteAsync(query, account);
