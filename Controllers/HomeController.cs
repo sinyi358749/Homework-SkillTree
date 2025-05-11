@@ -1,63 +1,80 @@
-using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using Homework_SkillTree.Models;
-using Microsoft.AspNetCore.Mvc;
 using Homework_SkillTree.Service;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace Homework_SkillTree.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IBookKeepingService  _bookKeepingService;
+        private readonly IBookKeepingService _bookKeepingService;
         private readonly int PageSize = 10; // 每頁顯示數量
 
 
-        public HomeController(ILogger<HomeController> logger,IBookKeepingService bookKeeping)
+        public HomeController(ILogger<HomeController> logger, IBookKeepingService bookKeeping)
         {
             _bookKeepingService = bookKeeping;
             _logger = logger;
         }
 
-        public IActionResult Index(int page=1)
+        public async Task<IActionResult> Index(int? page)
         {
+            int pageNumber = page ?? 1;
+            int pageSize = 10;
             // 取得所有的 BookKeeping 資料
-            var bookKeepings = _bookKeepingService.GetAllBookKeepingAsync().Result;
+            var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, pageSize);
 
-            // 偷吃步分頁邏輯
-            var count = bookKeepings.Count();
-            var totalPage = (int)Math.Ceiling((double)count / PageSize);
 
-            var startIndex = (page - 1) * PageSize;
-            var endIndex = Math.Min(startIndex + PageSize, count);
-            var paginatedBookKeepings = bookKeepings.Skip(startIndex).Take(PageSize).ToList();
+            TempData["pageNumber"] = pageNumber;
+            TempData.Keep("pageNumber");
 
-            // 設定分頁資訊
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPage;
-
-            return View(paginatedBookKeepings);
+            return View(model);
         }
 
 
         [HttpPost]
-        public IActionResult Create(BookKeepingViewModel bk)
+        public async Task<IActionResult> Index(BookKeepingViewModel BookKeeping)
         {
+            var pageNumber = 1;
 
             if (ModelState.IsValid)
             {
-                var result = _bookKeepingService.AddBookKeepingAsync(bk);
-                if(result.Result)
+                var result = await _bookKeepingService.AddBookKeepingAsync(BookKeeping);
+                if (result)
                 {
                     ViewData["Message"] = "存檔成功";
+                    return RedirectToAction("Index");
                 }
                 else
                 {
                     ViewData["Message"] = "存檔失敗";
                 }
             }
+            else
+            {
+                if (TempData["pageNumber"] != null)
+                {//取得當前分頁所在位置
+                    pageNumber = Convert.ToInt32(TempData["pageNumber"]);
+                }
+            
+                //取得驗證錯誤訊息
+                var errors = ModelState.Values.SelectMany(v => v.Errors);
+                var message = "";
+                foreach (var error in errors)
+                {
+                    message += (message==""?"":" , ") +error.ErrorMessage ;
+                }
+                ViewData["Message"] = message;
 
-            return RedirectToAction("Index");
+                // 將表單資料保存到 ViewData 或 TempData
+                ViewData["FormData"] = BookKeeping;
+            }
+
+            // 重新載入當下分頁資料
+            var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, PageSize);
+
+            return View("Index", model);
 
         }
 

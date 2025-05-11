@@ -6,6 +6,20 @@ namespace Homework_SkillTree.Models
     public partial class BookKeepingViewModel
     {
 
+        public class NotFutureDateAttribute : ValidationAttribute
+        {
+            public override string FormatErrorMessage(string name)
+            {
+                return "日期不可大於今日";
+            }
+
+            public override bool IsValid(object value)
+            {
+                DateTime date = (DateTime)value;
+                return date.Date <= DateTime.Today;
+            }
+        }
+
         public int? Id { get; set; }
 
         //類別
@@ -17,12 +31,14 @@ namespace Homework_SkillTree.Models
         [Display(Name = "交易日期")]
         [Required(ErrorMessage = "請輸入交易日期")]
         [Column(TypeName = "datetime")]
+        [NotFutureDate(ErrorMessage = "日期不可大於今日")]
         public DateTime? TransDate { get; set; }
 
         //交易金額
         [Display(Name = "交易金額")]
         [Required(ErrorMessage = "請輸入交易金額")]
-        public double? Amount { get; set; }
+        [Range(1, 2147483647, ErrorMessage = "金額不正確")]
+        public int Amount { get; set; }
 
         //備註
         [Display(Name = "備註")]

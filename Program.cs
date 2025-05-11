@@ -8,12 +8,16 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 //var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddScoped<DapperDbContext>();
+builder.Services.AddTransient<DapperDbContext>();
+
+
 
 // µù¥U Service
 builder.Services.AddScoped<IBookKeepingService, BookKeepingService>();
 
-builder.Services.AddScoped<AccountBookRepository>();
+builder.Services.AddTransient<AccountBookRepository>();
+
+ 
 
 var app = builder.Build();
 

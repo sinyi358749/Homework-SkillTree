@@ -1,43 +1,41 @@
-@model IEnumerable<Homework_SkillTree.Models.BookKeepingViewModel>
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<BookKeepingViewModel>
 
 @{
     ViewData["Title"] = "Home Page";
-    var bookKeeping = new Homework_SkillTree.Models.BookKeepingViewModel();
-
-    var prevPage = (int)ViewBag.CurrentPage - 1;
-    var nextPage = (int)ViewBag.CurrentPage + 1;
-    var totalPages = (int)ViewBag.TotalPages;
+    var formData = ViewData["FormData"] as BookKeepingViewModel ?? new BookKeepingViewModel();
 }
 
 <h2>Index頁</h2>
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Index" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label for="category" class="col-sm-2 col-form-label">類別</label>
                 <select id="category" asp-validation-for="Category" name="Category" class="form-select" required>
-                    <option value="" selected>請選擇</option>
-                    <option>支出</option>
-                    <option>收入</option>
+                    <option value="">請選擇</option>
+                    <option selected="@(formData.Category == "支出")">支出</option>
+                    <option selected="@(formData.Category == "收入")">收入</option>
                 </select>
             </div>
             <div class="form-group">
                 <label for="date" class="col-sm-2 col-form-label">日期</label>
-                <input type="datetime-local" name="TransDate" class="form-control" required />
-                <span asp-validation-for="@bookKeeping.TransDate" class="text-danger"></span>
+                <input type="datetime-local" name="TransDate" class="form-control" required value="@(formData.TransDate?.ToString("yyyy-MM-ddTHH:mm"))" />
+                <span asp-validation-for="@formData.TransDate" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label for="money" class="col-sm-2 col-form-label">金額</label>
-                <input name="Amount" class="form-control" required />
-                <span asp-validation-for="@bookKeeping.Amount" class="text-danger"></span>
+                <input type="number" name="Amount" class="form-control" required value="@formData.Amount" />
+                <span asp-validation-for="@formData.Amount" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label for="description" class="col-sm-2 col-form-label">備註</label>
 
-                <textarea name="Description" class="form-control" id="description" rows="3" required></textarea>
+                <textarea name="Description" class="form-control" id="description" rows="3" required> @formData.Description</textarea>
 
-                <span asp-validation-for="@bookKeeping.Description" class="text-danger"></span>
+                <span asp-validation-for="@formData.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Create" class="btn btn-primary" />
@@ -48,14 +46,11 @@
 
 @if (ViewData["Message"] != null)
 {
-    @if ((string)ViewData["Message"] == "存檔成功")
-    {
-        <label class="form-label text-success">存檔成功!</label>
-    }
-    else if ((string)ViewData["Message"] == "存檔失敗")
-    {
-        <label class="form-label text-danger">存檔失敗!</label>
-    }
+    var message = ViewData["Message"].ToString();
+    var cssClass = message.Contains("成功") ? "text-success" : "text-danger";
+    <div class="alert @cssClass">
+        @message
+    </div>
 }
 
 <hr />
@@ -70,16 +65,16 @@
                     流水號
                 </th>
                 <th style="width: 10%">
-                    @Html.DisplayNameFor(model => model.Category)
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Category)
                 </th>
                 <th style="width: 15%">
-                    @Html.DisplayNameFor(model => model.TransDate)
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().TransDate)
                 </th>
                 <th style="width: 15%">
-                    @Html.DisplayNameFor(model => model.Amount)
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Amount)
                 </th>
-                <th style="width: 35%; word-wrap: break-word; white-space: normal;">  
-                      @Html.DisplayNameFor(model => model.Description)  
+                <th style="width: 35%; word-wrap: break-word; white-space: normal;">
+                    @Html.DisplayNameFor(model => model.FirstOrDefault().Description)
                 </th>
                 <th style="width: 20%">
                     <span>功能</span>
@@ -87,16 +82,23 @@
             </tr>
         </thead>
         <tbody>
-           
+            @{ var index = 1;}
             @foreach (var item in Model)
             {
-                var index = (((int)ViewBag.CurrentPage - 1) * 10) + @Model.ToList().IndexOf(item)+1;
+                var calculatedIndex = ((Model.PageNumber - 1) * Model.PageSize) + index;
+
                 <tr>
                     <td class="text-center">
-                        @index
+                        @calculatedIndex
                     </td>
                     <td>
-                        @Html.DisplayFor(modelItem => item.Category)
+                        <span class="@(item.Category == "支出" ? "text-danger" : "text-primary")">
+
+                            @*<category-display category="@item.Category"> @item.Category </category-display>   *@
+                            @* TagHelper執行時沒正常顯示，不知道哪邊寫錯了.... *@
+
+                            <label asp-for="@item.Category">@item.Category</label>
+                        </span>
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.TransDate)
@@ -123,115 +125,32 @@
                         </div>
                     </td>
                 </tr>
+
+                index++;
             }
+             
         </tbody>
+
+
+        <!-- 分頁控制項 -->
+        <div class="d-flex justify-content-center">
+            @Html.PagedListPager(Model, page => Url.Action("Index", new { page }),
+                     new PagedListRenderOptions
+            {
+                LiElementClasses = new string[] { "page-item" },
+                PageClasses = new string[] { "page-link" },
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always
+            })
+        </div>
+
     </table>
 
 
  
-    <nav aria-label="Page navigation">
-        <ul class="pagination pagination-sm flex-wrap justify-content-center gap-1">
-            <li class="page-item @(prevPage < 1 ? "disabled" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = prevPage })"
-                   aria-label="Previous" @(prevPage < 1 ? "tabindex=-1" : "")>
-                    <span aria-hidden="true">&laquo;</span>
-                </a>
-            </li>
 
-            @for (var i = 1; i <= totalPages; i++)  
-            {  
-               <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">  
-                   <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>  
-               </li>  
-            }
-
-            <li class="page-item @(nextPage > totalPages ? "disabled" : "")">
-                <a class="page-link" href="@Url.Action("Index", new { page = nextPage })"
-                   aria-label="Next" @(nextPage > totalPages ? "tabindex=-1" : "")>
-                    <span aria-hidden="true">&raquo;</span>
-                </a>
-            </li>
-        </ul>
-    </nav>
 </div>
 
 
 
-@* 
-<div class="container mt-4">
-    <div class="card bg-light">
-        <div class="card-body">
-            <form>
-                <div class="row mb-3">
-                    <label for="category" class="col-sm-2 col-form-label">類別</label>
-                    <div class="col-sm-10">
-                        <select id="category" class="form-select">
-                            <option value="" selected>請選擇</option>
-                            <option>支出</option>
-                            <option>收入</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="money" class="col-sm-2 col-form-label">金額</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="money" placeholder="金額">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="date" class="col-sm-2 col-form-label">日期</label>
-                    <div class="col-sm-10">
-                        <input type="text" class="form-control" id="date" placeholder="日期">
-                    </div>
-                </div>
-                <div class="row mb-3">
-                    <label for="description" class="col-sm-2 col-form-label">備註</label>
-                    <div class="col-sm-10">
-                        <textarea class="form-control" id="description" rows="3"></textarea>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-sm-10 offset-sm-2">
-                        <button type="submit" class="btn btn-primary">送出</button>
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>#</th>
-                        <th>類別</th>
-                        <th>日期</th>
-                        <th>金額</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>支出</td>
-                        <td>2025-01-01</td>
-                        <td>300</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>支出</td>
-                        <td>2025-01-02</td>
-                        <td>1,600</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>支出</td>
-                        <td>2025-01-03</td>
-                        <td>8,00</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
- *@
+ 
