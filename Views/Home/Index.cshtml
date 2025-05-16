@@ -10,7 +10,7 @@
 <h2>Index頁</h2>
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Index" method="post">
+        <form asp-action="Update" method="post">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label for="category" class="col-sm-2 col-form-label">類別</label>
@@ -38,7 +38,10 @@
                 <span asp-validation-for="@formData.Description" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
+                <input type="submit" value="存檔" class="btn btn-primary" />
+                <input type="reset" value="取消" class="btn btn-secondary"  onclick="resetForm()" />
+                <input type="hidden" id="hdEdit" name="IsEdit" value="@ViewData["IsEdit"]" />
+                <input type="hidden" id="hdKeyId" name="KeyId" value="@formData.keyId" />
             </div>
         </form>
     </div>
@@ -152,5 +155,38 @@
 </div>
 
 
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+    <script>
+        function resetForm() {
+            console.log("resetForm");
+            // 清空表單欄位
+            document.getElementById('category').value = '';
+            document.querySelector('input[name="TransDate"]').value = '';
+            document.querySelector('input[name="Amount"]').value = '';
+            document.getElementById('description').value = '';
 
- 
+            // 重設隱藏欄位
+            document.getElementById('hdEdit').value = '';
+            document.getElementById('hdKeyId').value = '';
+
+            // 移除驗證錯誤訊息
+            $('.text-danger').text('');
+            $('.is-invalid').removeClass('is-invalid');
+
+            // 如果是編輯模式，返回列表頁
+            if('@ViewData["IsEdit"]' === 'True') {
+                window.location.href = '@Url.Action("Index", "Home")';
+            }
+        }
+
+        // 在表單提交前進行確認
+        $('form').on('submit', function(e) {
+            if (!confirm('確定要儲存嗎？')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+}

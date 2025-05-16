@@ -43,7 +43,7 @@ namespace Homework_SkillTree.Data
                 return (list, total);
             }
         }
-     
+
 
         public async Task<AccountBookModel> GetAccountBookByIdAsync(Guid id)
         {
@@ -66,12 +66,14 @@ namespace Homework_SkillTree.Data
         public async Task<int> UpdateAccountBooksAsync(AccountBookModel account)
         {
             var query = "Update AccountBook set [Categoryyy]=@Categoryyy,[Amounttt]=@Amounttt,[Dateee]=@Dateee,[Remarkkk]=@Remarkkk where Id=@Id";
+
             using (var connection = _dbContext.Connection)
             {
                 return await connection.ExecuteAsync(query, account);
             }
         }
-                public async Task<int> DeleteAccountBooksAsync(Guid id)
+
+        public async Task<int> DeleteAccountBooksAsync(Guid id)
         {
             var query = "Delete from AccountBook where Id=@Id";
             using (var connection = _dbContext.Connection)

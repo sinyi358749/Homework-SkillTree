@@ -45,21 +45,33 @@ namespace Homework_SkillTree.Controllers
                 }
             }
 
+            TempData["pageNumber"] = page;
+
             // 取得所有的 BookKeeping 資料
             var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, PageSize);
 
             return View(model);
         }
 
-
         [HttpPost]
-        public async Task<IActionResult> Index(BookKeepingViewModel BookKeeping)
+        public async Task<IActionResult> Update(BookKeepingViewModel BookKeeping)
         {
             var pageNumber = 1;
 
             if (ModelState.IsValid)
             {
-                var result = await _bookKeepingService.AddBookKeepingAsync(BookKeeping);
+                var IsEdit = Request.Form["IsEdit"];//判斷是否為編輯模式
+                var result = false;
+                if (IsEdit == "Y")
+                {
+                    //編輯
+                    result = await _bookKeepingService.UpdateBookKeepingAsync(BookKeeping);
+                }
+                else
+                {//新增
+                    result = await _bookKeepingService.AddBookKeepingAsync(BookKeeping);
+                }
+                  
                 if (result)
                 {
                     ViewData["Message"] = "存檔成功";
@@ -97,7 +109,6 @@ namespace Homework_SkillTree.Controllers
 
         }
 
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
@@ -130,7 +141,7 @@ namespace Homework_SkillTree.Controllers
 
             // 保存要編輯的資料到 ViewData
             ViewData["FormData"] = result;
-            ViewData["IsEdit"] = true;
+            ViewData["IsEdit"] = "Y";
 
             // 取得當前分頁的資料
             var pageNumber = 1;
