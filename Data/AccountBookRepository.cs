@@ -13,14 +13,37 @@ namespace Homework_SkillTree.Data
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<AccountBookModel>> GetAllAccountBooksAsync()
+        public async Task<(IEnumerable<AccountBookModel> Data, int TotalCount)> GetAccountBooksWithTotalAsync(int pageNumber, int pageSize)
         {
-            var query = "SELECT * FROM AccountBook with(nolock)";
+            var offset = (pageNumber - 1) * pageSize;
+
+            var query = @"
+                SELECT *, COUNT(*) OVER() AS TotalCount 
+                FROM AccountBook WITH (NOLOCK)
+                ORDER BY Dateee DESC
+                OFFSET @Offset ROWS
+                FETCH NEXT @PageSize ROWS ONLY";
+
             using (var connection = _dbContext.Connection)
             {
-                return await connection.QueryAsync<AccountBookModel>(query);
+                var result = await connection.QueryAsync<AccountBookModel, int, AccountBookModel>(
+                    query,
+                    (data, totalCount) =>
+                    {
+                        data.TotalCount = totalCount;
+                        return data;
+                    },
+                     new { Offset = offset, PageSize = pageSize },  // 添加參數
+                    splitOn: "TotalCount"
+                );
+
+                var list = result.ToList();
+                var total = list.Any() ? list.First().TotalCount : 0;
+
+                return (list, total);
             }
         }
+     
 
         public async Task<AccountBookModel> GetAccountBookByIdAsync(Guid id)
         {

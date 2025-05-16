@@ -25,5 +25,6 @@ namespace Homework_SkillTree.Models
         [Required(ErrorMessage = "請輸入備註")]
         public string Remarkkk { get; set; } 
 
+        public int TotalCount { get; set; } // 用於存儲總筆數
     }
 }

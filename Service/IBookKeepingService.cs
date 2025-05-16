@@ -9,7 +9,7 @@ namespace Homework_SkillTree.Service
        
         Task<IPagedList<BookKeepingViewModel>> GetPagedBookKeepingAsync(int pageNumber = 1, int pageSize = 10);
 
-        Task<List<BookKeepingViewModel>> GetAllBookKeepingAsync();
+       // Task<List<BookKeepingViewModel>> GetAllBookKeepingAsync(int pageNumber = 1, int pageSize = 10);
 
         Task<BookKeepingViewModel> GetBookKeepingByIdAsync(Guid id);
 

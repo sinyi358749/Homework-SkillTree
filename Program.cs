@@ -13,7 +13,7 @@ builder.Services.AddTransient<DapperDbContext>();
 
 
 // µù¥U Service
-builder.Services.AddScoped<IBookKeepingService, BookKeepingService>();
+builder.Services.AddTransient<IBookKeepingService, BookKeepingService>();
 
 builder.Services.AddTransient<AccountBookRepository>();
 

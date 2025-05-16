@@ -14,37 +14,56 @@ namespace Homework_SkillTree.Service
             _accountBookRepository = accountBookRepository;
         }
 
-        public async Task<IPagedList<BookKeepingViewModel>> GetPagedBookKeepingAsync(int pageNumber = 1, int pageSize = 10)
+        public async Task<IPagedList<BookKeepingViewModel>> GetPagedBookKeepingAsync(int pageNumber , int pageSize)
         {
-            var allItems = await GetAllBookKeepingAsync();
-            return allItems.ToPagedList(pageNumber, pageSize);
-        }
+            var boolKeepings = new List<BookKeepingViewModel>();
+            var result = await _accountBookRepository.GetAccountBooksWithTotalAsync(pageNumber, pageSize);
+            //var result = await _accountBookRepository.GetAllAccountBooksAsync(pageNumber, pageSize);
 
-        //取清單
-        public async Task<List<BookKeepingViewModel>> GetAllBookKeepingAsync()
-        {
-            var bookKeepings = new List<BookKeepingViewModel>();
-
-            var result = await _accountBookRepository.GetAllAccountBooksAsync();
-
-            result.ToList().ForEach(x =>
+            foreach (var bookKeepingViewModel in result.Data)
             {
                 var bookKeeping = new BookKeepingViewModel
                 {
-                    keyId = x.Id,
-                    Category = (x.Categoryyy == 0 ? "支出" : "收入"),
-                    Amount = x.Amounttt,
-                    TransDate = x.Dateee,
-                    Description = x.Remarkkk
+                    keyId = bookKeepingViewModel.Id,
+                    Category = (bookKeepingViewModel.Categoryyy == 0 ? "支出" : "收入"),
+                    Amount = bookKeepingViewModel.Amounttt,
+                    TransDate = bookKeepingViewModel.Dateee,
+                    Description = bookKeepingViewModel.Remarkkk
                 };
-                bookKeepings.Add(bookKeeping);
-            });
+                boolKeepings.Add(bookKeeping);
+            }
+            boolKeepings = boolKeepings.OrderByDescending(x => x.TransDate).ToList();//`排序
+            int totalCount = result.TotalCount;//取得總筆數
 
-            //依TransDate 排序
-            bookKeepings = bookKeepings.OrderByDescending(x => x.TransDate).ToList();
+            return new StaticPagedList<BookKeepingViewModel>(boolKeepings, pageNumber, pageSize, totalCount);
 
-            return bookKeepings;
         }
+
+        //取清單
+        //public async Task<List<BookKeepingViewModel>> GetAllBookKeepingAsync(int pageNumber = 1, int pageSize = 10)
+        //{
+        //    var bookKeepings = new List<BookKeepingViewModel>();
+
+        //    var result = await _accountBookRepository.GetAllAccountBooksAsync(pageNumber, pageSize);
+
+        //    result.ToList().ForEach(x =>
+        //    {
+        //        var bookKeeping = new BookKeepingViewModel
+        //        {
+        //            keyId = x.Id,
+        //            Category = (x.Categoryyy == 0 ? "支出" : "收入"),
+        //            Amount = x.Amounttt,
+        //            TransDate = x.Dateee,
+        //            Description = x.Remarkkk
+        //        };
+        //        bookKeepings.Add(bookKeeping);
+        //    });
+
+        //    //依TransDate 排序
+        //    bookKeepings = bookKeepings.OrderByDescending(x => x.TransDate).ToList();
+
+        //    return bookKeepings;
+        //}
 
         //取單筆
         public async Task<BookKeepingViewModel> GetBookKeepingByIdAsync(Guid id)

@@ -116,10 +116,10 @@
                     </td>
                     <td class="text-center">
                         <div class="btn-group" role="group">
-                            <a class="btn btn-sm btn-outline-primary" asp-route-id="@item.keyId" onclick="alert('尚未開發完成')">
+                            <a class="btn btn-sm btn-outline-primary" asp-route-id="@item.keyId" asp-action="Edit" asp-route-id="@item.keyId">
                                 <i class="bi bi-pencil"></i> 明細
                             </a>
-                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.keyId">
+                            <a class="btn btn-sm btn-outline-danger" asp-action="Delete" asp-route-id="@item.keyId" >
                                 <i class="bi bi-trash"></i> 刪除
                             </a>
                         </div>

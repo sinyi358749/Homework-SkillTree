@@ -1,7 +1,9 @@
 using Homework_SkillTree.Models;
 using Homework_SkillTree.Service;
 using Microsoft.AspNetCore.Mvc;
+using System.Configuration;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Homework_SkillTree.Controllers
 {
@@ -9,25 +11,42 @@ namespace Homework_SkillTree.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IBookKeepingService _bookKeepingService;
-        private readonly int PageSize = 10; // 每頁顯示數量
+        private readonly IConfiguration _configuration;
+ 
 
-
-        public HomeController(ILogger<HomeController> logger, IBookKeepingService bookKeeping)
+        public HomeController(ILogger<HomeController> logger, IBookKeepingService bookKeeping, IConfiguration configuration)
         {
             _bookKeepingService = bookKeeping;
             _logger = logger;
+            _configuration = configuration;
+        }
+
+        // 分頁筆數
+        private int PageSize
+        {
+            get
+            {
+                return _configuration.GetValue<int>("PageSize");
+            }
         }
 
         public async Task<IActionResult> Index(int? page)
         {
-            int pageNumber = page ?? 1;
-            int pageSize = 10;
+            int pageNumber = 1;
+           if(page != null)
+            {
+                if (page < 1)
+                {
+                    pageNumber = 1;
+                }
+                else
+                {
+                    pageNumber = (int)page;
+                }
+            }
+
             // 取得所有的 BookKeeping 資料
-            var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, pageSize);
-
-
-            TempData["pageNumber"] = pageNumber;
-            TempData.Keep("pageNumber");
+            var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, PageSize);
 
             return View(model);
         }
@@ -96,7 +115,33 @@ namespace Homework_SkillTree.Controllers
             {
                 ViewData["Message"] = "刪除失敗";
             }
-            return RedirectToAction("Index");
+
+
+            return RedirectToAction("Index"); ;
         }
+
+        public async Task<IActionResult>  Edit(Guid id)
+        {
+            var result = await _bookKeepingService.GetBookKeepingByIdAsync(id);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            // 保存要編輯的資料到 ViewData
+            ViewData["FormData"] = result;
+            ViewData["IsEdit"] = true;
+
+            // 取得當前分頁的資料
+            var pageNumber = 1;
+            if (TempData["pageNumber"] != null)
+            {
+                pageNumber = Convert.ToInt32(TempData["pageNumber"]);
+            }
+
+            var model = await _bookKeepingService.GetPagedBookKeepingAsync(pageNumber, PageSize);
+            return View("Index", model);
+        }
+
     }
 }
